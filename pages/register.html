@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Регистрация</title>
+  <link rel="stylesheet" href="../assets/css/style_gym.css" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>1Fit</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="catalog.html">Каталог</a></li>
+          <li><a href="login.html">Войти</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="container">
+    <h2>Создание аккаунта</h2>
+    <form id="registerForm" class="booking-form">
+      <label>Логин:</label>
+      <input type="text" id="regLogin" required>
+      <label>Пароль:</label>
+      <input type="password" id="regPassword" required>
+      <label>Повторите пароль:</label>
+      <input type="password" id="regRepeat" required>
+      <button type="submit" class="btn">Зарегистрироваться</button>
+    </form>
+    <p id="registerMessage" class="success-message" style="display: none;"></p>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 1Fit Clone. Все права защищены.</p>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.getElementById("registerForm");
+    const message = document.getElementById("registerMessage");
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+
+      const login = document.getElementById("regLogin").value.trim();
+      const pass = document.getElementById("regPassword").value;
+      const repeat = document.getElementById("regRepeat").value;
+
+      if (pass !== repeat) {
+        message.textContent = "❌ Пароли не совпадают";
+        message.style.color = "#f44336";
+        message.style.display = "block";
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+      if (users.find(u => u.login === login)) {
+        message.textContent = "❌ Такой логин уже существует";
+        message.style.color = "#f44336";
+        message.style.display = "block";
+        return;
+      }
+
+      const newUser = { login: login, password: pass };
+      users.push(newUser);
+      localStorage.setItem("users", JSON.stringify(users));
+
+      message.textContent = "✅ Успешная регистрация! Переход на вход...";
+      message.style.color = "#4caf50";
+      message.style.display = "block";
+
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+    };
+  </script>
+</body>
+</html>

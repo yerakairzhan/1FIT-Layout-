@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Админ-панель</title>
+  <link rel="stylesheet" href="../assets/css/style_admin.css" />
+</head>
+<body>
+  <header>
+    <h1>Панель администратора</h1>
+    <button onclick="logout()">Выйти</button>
+  </header>
+
+  <section>
+    <h2>Добавить новый зал</h2>
+    <form id="gymForm">
+      <input type="text" id="gymName" placeholder="Название зала" required />
+      <input type="text" id="gymAddress" placeholder="Адрес" required />
+      <input type="text" id="gymCategory" placeholder="Категория" required />
+      <input type="text" id="gymImage" placeholder="Ссылка на изображение" required />
+      <button type="submit">Добавить зал</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Управление расписанием</h2>
+    <form id="scheduleForm">
+      <select id="scheduleGym"></select>
+      <input type="text" id="scheduleDay" placeholder="День (Пн)" required />
+      <input type="time" id="scheduleTime" required />
+      <input type="number" id="scheduleSpots" placeholder="Места" required />
+      <button type="submit">Добавить время</button>
+    </form>
+  </section>
+
+  <script src="../assets/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Мои брони</title>
+  <link rel="stylesheet" href="../assets/css/style_gym.css" />
+  <link rel="stylesheet" href="../assets/css/style_profile.css">
+  
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>1Fit</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="catalog.html">Каталог</a></li>
+          <li><a href="profile.html">Мои брони</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="container">
+    <h2>Мои брони</h2>
+    <input type="text" id="searchInput" placeholder="Поиск по залу, дню или времени..." style="margin-bottom: 20px; padding: 8px; width: 100%; max-width: 400px; border: 1px solid #ccc; border-radius: 4px;">
+    <ul id="bookingList" class="booking-list"></ul>
+    <button class="btn" id="clearBookingsBtn">Очистить все бронирования</button>
+  </section>
+
+  <!-- Модальное окно редактирования -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeEditModal()">&times;</span>
+      <h3>Изменить бронь</h3>
+      <label>Новый день:</label>
+      <select id="editDaySelect" onchange="updateTimeOptions()" required>
+        <option value="Пн">Пн</option>
+        <option value="Вт">Вт</option>
+        <option value="Ср">Ср</option>
+        <option value="Чт">Чт</option>
+        <option value="Пт">Пт</option>
+        <option value="Сб">Сб</option>
+      </select>
+      <label>Новое время:</label>
+      <select id="editTimeSelect" required></select>
+      <button class="btn" onclick="saveEdit()">Сохранить</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <label>Фильтр по дню:</label>
+    <select id="dayFilter">
+      <option value="">Все</option>
+      <option value="Пн">Пн</option>
+      <option value="Вт">Вт</option>
+      <option value="Ср">Ср</option>
+      <option value="Чт">Чт</option>
+      <option value="Пт">Пт</option>
+      <option value="Сб">Сб</option>
+    </select>
+  
+    <label>Категория:</label>
+    <select id="categoryFilter">
+      <option value="">Все</option>
+      <option value="Фитнес">Фитнес</option>
+      <option value="Тренажерный зал">Тренажерный зал</option>
+      <option value="Йога">Йога</option>
+      <option value="Плавание">Плавание</option>
+    </select>
+  </div>
+  
+  
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 1Fit Clone. Все права защищены.</p>
+    </div>
+  </footer>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("loggedUser"));
+    const allBookings = JSON.parse(localStorage.getItem("userBookings")) || {};
+    const scheduleSlots = JSON.parse(localStorage.getItem("scheduleSlots")) || {
+    };
+
+    const bookingList = document.getElementById("bookingList");
+    const clearBtn = document.getElementById("clearBookingsBtn");
+
+    let currentEditIndex = null;
+
+    function saveAll() {
+      localStorage.setItem("userBookings", JSON.stringify(allBookings));
+      localStorage.setItem("scheduleSlots", JSON.stringify(scheduleSlots));
+    }
+
+    function renderBookings(searchText = "") {
+      bookingList.innerHTML = "";
+      const userBookings = allBookings[user?.login] || [];
+    
+      const selectedDay = document.getElementById("dayFilter").value;
+      const selectedCategory = document.getElementById("categoryFilter").value;
+    
+      const filtered = userBookings.filter(b => {
+        const matchesSearch = `${b.gymName} ${b.day} ${b.time}`.toLowerCase().includes(searchText.toLowerCase());
+        const matchesDay = selectedDay === "" || b.day === selectedDay;
+        const matchesCategory = selectedCategory === "" || b.category === selectedCategory;
+        return matchesSearch && matchesDay && matchesCategory;
+      });
+    
+      if (filtered.length === 0) {
+        bookingList.innerHTML = "<li>• Ничего не найдено.</li>";
+        return;
+      }
+    
+      filtered.forEach((b, i) => {
+        const isFav = (JSON.parse(localStorage.getItem("favorites")) || []).includes(b.gymName);
+        const star = isFav ? "⭐" : "☆";
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${star} <strong>${b.gymName}</strong> — 📅 ${b.day}, 🕒 ${b.time}
+          <button class="edit-btn" onclick="openEditModal(${i})">✏</button>
+          <button class="delete-btn" onclick="deleteBooking(${i})">🗑</button>
+          <button onclick="toggleFavorite('${b.gymName}')">❤️</button>
+        `;
+        bookingList.appendChild(li);
+      });
+    }
+    
+    
+
+    function deleteBooking(index) {
+      const userBookings = allBookings[user.login];
+      const removed = userBookings.splice(index, 1)[0];
+
+      if (removed && scheduleSlots[removed.day]) {
+        const slot = scheduleSlots[removed.day].find(s => s.time === removed.time);
+        if (slot) slot.spots++;
+      }
+
+      saveAll();
+      renderBookings();
+    }
+
+    clearBtn.onclick = () => {
+      const bookings = allBookings[user.login] || [];
+      bookings.forEach(b => {
+        const slot = scheduleSlots[b.day]?.find(s => s.time === b.time);
+        if (slot) slot.spots++;
+      });
+
+      delete allBookings[user.login];
+      saveAll();
+      renderBookings();
+      alert("✅ Все брони удалены!");
+    };
+
+    function openEditModal(index) {
+      currentEditIndex = index;
+      const booking = allBookings[user.login][index];
+      document.getElementById("editDaySelect").value = booking.day;
+      updateTimeOptions(booking.day); // обновим слоты времени
+      document.getElementById("editTimeSelect").value = booking.time;
+      document.getElementById("editModal").style.display = "block";
+    }
+
+    function closeEditModal() {
+      document.getElementById("editModal").style.display = "none";
+    }
+
+    function updateTimeOptions(day) {
+      const timeSelect = document.getElementById("editTimeSelect");
+      timeSelect.innerHTML = "";
+    
+      if (scheduleSlots[day]) {
+        scheduleSlots[day].forEach(slot => {
+          if (slot.spots > 0) {
+            const opt = document.createElement("option");
+            opt.value = slot.time;
+            opt.textContent = `${slot.time} (${slot.spots} мест)`;
+            timeSelect.appendChild(opt);
+          }
+        });
+      }
+    }
+
+    function saveEdit() {
+      const newDay = document.getElementById("editDaySelect").value;
+      const newTime = document.getElementById("editTimeSelect").value;
+      const userBookings = allBookings[user.login];
+      const booking = userBookings[currentEditIndex];
+
+      if (!newDay || !newTime) {
+        alert("Выберите день и время.");
+        return;
+      }
+
+      // Проверка: уже есть такая бронь
+      const exists = userBookings.some((b, i) =>
+        i !== currentEditIndex && b.day === newDay && b.time === newTime
+      );
+      if (exists) {
+        alert("У вас уже есть бронь на это время.");
+        return;
+      }
+
+      // Освобождаем старый слот
+      const oldSlot = scheduleSlots[booking.day]?.find(s => s.time === booking.time);
+      if (oldSlot) oldSlot.spots++;
+
+      // Забираем новый слот
+      const newSlot = scheduleSlots[newDay]?.find(s => s.time === newTime);
+      if (newSlot && newSlot.spots > 0) {
+        newSlot.spots--;
+      } else {
+        alert("Нет мест на это время.");
+        return;
+      }
+
+      booking.day = newDay;
+      booking.time = newTime;
+
+      saveAll();
+      closeEditModal();
+      renderBookings();
+    }
+
+    function toggleFavorite(gymName) {
+      let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    
+      if (favorites.includes(gymName)) {
+        favorites = favorites.filter(g => g !== gymName);
+      } else {
+        favorites.push(gymName);
+      }
+    
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+      renderBookings(document.getElementById("searchInput").value);
+    }
+    
+
+    document.getElementById("searchInput").addEventListener("input", function () {
+      renderBookings(this.value);
+    });
+    document.getElementById("dayFilter").addEventListener("change", function () {
+      renderBookings(document.getElementById("searchInput").value);
+    });
+    
+    document.getElementById("categoryFilter").addEventListener("change", function () {
+      renderBookings(document.getElementById("searchInput").value);
+    });
+
+    document.getElementById("editDaySelect").addEventListener("change", function () {
+      const selectedDay = this.value;
+      updateTimeOptions(selectedDay);
+    });
+
+    renderBookings();
+    window.deleteBooking = deleteBooking;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.saveEdit = saveEdit;
+  </script>
+</body>
+</html>

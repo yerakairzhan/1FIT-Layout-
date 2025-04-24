@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Вход</title>
+  <link rel="stylesheet" href="../assets/css/style_gym.css" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>1Fit</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="catalog.html">Каталог</a></li>
+          <li><a href="register.html">Регистрация</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="container">
+    <h2>Вход в аккаунт</h2>
+    <form id="loginForm" class="booking-form">
+      <label>Логин:</label>
+      <input type="text" id="loginInput" required>
+      <label>Пароль:</label>
+      <input type="password" id="passwordInput" required>
+      <button type="submit" class="btn">Войти</button>
+    </form>
+    <p id="loginMessage" class="success-message" style="display: none;"></p>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 1Fit Clone. Все права защищены.</p>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("loginMessage");
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      const login = document.getElementById("loginInput").value.trim();
+      const password = document.getElementById("passwordInput").value;
+
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      const user = users.find(u => u.login === login && u.password === password);
+        
+      if (user) {
+        localStorage.setItem("loggedUser", JSON.stringify(user));
+        message.textContent = "✅ Успешный вход! Перенаправляем...";
+        message.style.display = "block"
+        setTimeout(() => {
+          window.location.href = "profile.html";
+        }, 2000);
+      } else {
+        message.textContent = "❌ Неверный логин или пароль";
+        message.style.display = "block";
+        message.style.color = "#f44336";
+      }
+    };
+  </script>
+</body>
+</html>
