@@ -1,34 +1,37 @@
-📦 1Fit App Clone
-This project is a clone of the website 1fit.app, built using Angular for the frontend and Django for the backend. The application replicates the core features of 1fit.app, a platform that [briefly describe what 1fit.app does, e.g., "offers a subscription model for fitness classes, gym access, and related services"].
+# 📦 1Fit App Clone
 
-🛠 Tech Stack
-Frontend: Angular
+This project is a **clone** of the website **1fit.app**, built using **Angular** for the frontend and **Django** for the backend. The application replicates the core features of **1fit.app**, a platform that [briefly describe what 1fit.app does, e.g., "offers a subscription model for fitness classes, gym access, and related services"].
 
-Backend: Django (Django REST Framework if applicable)
+---
 
-Database: [e.g., PostgreSQL, SQLite, etc.]
+## 🛠 Tech Stack
 
-Others: [e.g., Docker, Nginx, Gunicorn, etc.]
+- **Frontend**: Angular  
+- **Backend**: Django (Django REST Framework if applicable)  
+- **Database**: [e.g., PostgreSQL, SQLite, etc.]  
+- **Others**: [e.g., Docker, Nginx, Gunicorn, etc.]
 
-🚀 Getting Started
-Prerequisites
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
 Make sure you have the following installed:
 
-Node.js & npm
+- Node.js & npm
+- Python 3.x
+- Angular CLI (`npm install -g @angular/cli`)
+- pip / pipenv / poetry (your choice)
+- [Optional] Docker & Docker Compose
 
-Python 3.x
+---
 
-Angular CLI (npm install -g @angular/cli)
+### 🧪 Setup (Development)
 
-pip / pipenv / poetry (your choice)
+#### Backend (Django)
 
-[Optional] Docker & Docker Compose
-
-🧪 Setup (Development)
-Backend (Django)
-bash
-Copy
-Edit
+```bash
 cd backend
 python -m venv venv
 source venv/bin/activate  # or `venv\Scripts\activate` on Windows
